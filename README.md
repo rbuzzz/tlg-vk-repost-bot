@@ -400,6 +400,20 @@ Only users in `ADMIN_IDS` can run these.
 - Create a **community access token** for your VK group.
 - If uploads fail due to permissions, add a **user access token** as `VK_USER_ACCESS_TOKEN`.
 
+### VK user token (refreshable)
+If your VK user token expires (often 1 hour with VK ID), the bot can refresh it automatically.
+Fill these in `.env`:
+- `VK_USER_ACCESS_TOKEN`
+- `VK_USER_REFRESH_TOKEN`
+- `VK_USER_CLIENT_ID`
+- `VK_USER_DEVICE_ID`
+- `VK_USER_STATE`
+- `VK_USER_TOKEN_EXPIRES_AT` (unix timestamp when token expires)
+- `VK_ID_OAUTH_URL` (default is already set)
+
+When the token is near expiration, the worker refreshes it and stores new values in the database settings table.
+
+
 ---
 
 # Telegram channel setup

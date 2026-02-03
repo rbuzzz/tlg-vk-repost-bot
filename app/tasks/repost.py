@@ -25,6 +25,7 @@ from app.tg.client import TelegramClient
 from app.utils.files import cleanup_file, ensure_dir
 from app.utils.locks import RedisLock
 from app.vk.client import VKClient
+from app.vk.token_manager import get_user_access_token
 from app.vk.uploads import upload_document, upload_photo, upload_video
 from app.vk.wall import post_to_wall
 
@@ -75,6 +76,7 @@ def _upload_media_items(
     notes: List[str] = []
 
     max_bytes = settings.MAX_FILE_SIZE_MB * 1024 * 1024
+    user_token = get_user_access_token()
 
     for item in media_items:
         file_id = item["file_id"]
@@ -91,7 +93,7 @@ def _upload_media_items(
                     vk_client,
                     downloaded.path,
                     vk_group_id,
-                    user_token=settings.VK_USER_ACCESS_TOKEN,
+                    user_token=user_token,
                 )
             elif item["type"] == "video":
                 attachment = upload_video(
@@ -99,7 +101,7 @@ def _upload_media_items(
                     downloaded.path,
                     vk_group_id,
                     title=file_name_hint,
-                    user_token=settings.VK_USER_ACCESS_TOKEN,
+                    user_token=user_token,
                 )
             elif item["type"] == "document":
                 attachment = upload_document(
@@ -107,7 +109,7 @@ def _upload_media_items(
                     downloaded.path,
                     vk_group_id,
                     title=file_name_hint,
-                    user_token=settings.VK_USER_ACCESS_TOKEN,
+                    user_token=user_token,
                 )
             else:
                 notes.append(f"Skipped unsupported type: {item['type']}")

@@ -15,7 +15,13 @@ class Settings:
     VK_GROUP_ID: int
     VK_ACCESS_TOKEN: str
     VK_USER_ACCESS_TOKEN: str | None
+    VK_USER_REFRESH_TOKEN: str | None
+    VK_USER_CLIENT_ID: str | None
+    VK_USER_DEVICE_ID: str | None
+    VK_USER_STATE: str | None
+    VK_USER_TOKEN_EXPIRES_AT: int | None
     VK_API_VERSION: str
+    VK_ID_OAUTH_URL: str
     MODE: str
     LIMIT_STRATEGY: str
     ALBUM_FINALIZE_DELAY_SEC: int
@@ -45,6 +51,12 @@ def _require(name: str) -> str:
     return value
 
 
+def _parse_int(value: str | None) -> int | None:
+    if value is None or value == "":
+        return None
+    return int(value)
+
+
 _settings: Settings | None = None
 _env_loaded = False
 
@@ -71,7 +83,13 @@ def get_settings() -> Settings:
         VK_GROUP_ID=vk_group_id,
         VK_ACCESS_TOKEN=vk_access_token,
         VK_USER_ACCESS_TOKEN=os.getenv("VK_USER_ACCESS_TOKEN") or None,
+        VK_USER_REFRESH_TOKEN=os.getenv("VK_USER_REFRESH_TOKEN") or None,
+        VK_USER_CLIENT_ID=os.getenv("VK_USER_CLIENT_ID") or None,
+        VK_USER_DEVICE_ID=os.getenv("VK_USER_DEVICE_ID") or None,
+        VK_USER_STATE=os.getenv("VK_USER_STATE") or None,
+        VK_USER_TOKEN_EXPIRES_AT=_parse_int(os.getenv("VK_USER_TOKEN_EXPIRES_AT")),
         VK_API_VERSION=os.getenv("VK_API_VERSION", "5.199"),
+        VK_ID_OAUTH_URL=os.getenv("VK_ID_OAUTH_URL", "https://id.vk.ru/oauth2/auth"),
         MODE=os.getenv("MODE", "auto"),
         LIMIT_STRATEGY=os.getenv("LIMIT_STRATEGY", "truncate"),
         ALBUM_FINALIZE_DELAY_SEC=int(os.getenv("ALBUM_FINALIZE_DELAY_SEC", "3")),

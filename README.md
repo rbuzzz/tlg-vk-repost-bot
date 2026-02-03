@@ -181,6 +181,24 @@ You should start seeing JSON-style log lines indicating polling and task process
 
 ---
 
+# Development (Quality Checks)
+
+Install dev tools:
+`ash
+pip install -r requirements-dev.txt
+` 
+
+Run checks locally:
+`ash
+ruff check .
+mypy app
+pytest
+` 
+
+CI runs the same checks on every push/PR.
+
+---
+
 # Quick Start (Server with Docker) - Recommended
 
 ## Prerequisites on the server
@@ -447,3 +465,4 @@ Only users in `ADMIN_IDS` can run these.
 - Only one poller should run at a time.
 - Worker can scale, but idempotency prevents duplicates.
 - Long polling is required; webhooks are intentionally not used.
+

@@ -77,8 +77,8 @@ def _upload_media_items(
     max_bytes = settings.MAX_FILE_SIZE_MB * 1024 * 1024
 
     for item in media_items:
-        file_id = item.file_id
-        file_name_hint = item.file_name or file_id
+        file_id = item["file_id"]
+        file_name_hint = item.get("file_name") or file_id
 
         downloaded = tg_client.download_file_by_id(file_id, settings.TEMP_DIR, max_bytes)
         if downloaded is None:
@@ -86,14 +86,14 @@ def _upload_media_items(
             continue
 
         try:
-            if item.type == "photo":
+            if item["type"] == "photo":
                 attachment = upload_photo(
                     vk_client,
                     downloaded.path,
                     vk_group_id,
                     user_token=settings.VK_USER_ACCESS_TOKEN,
                 )
-            elif item.type == "video":
+            elif item["type"] == "video":
                 attachment = upload_video(
                     vk_client,
                     downloaded.path,
@@ -101,7 +101,7 @@ def _upload_media_items(
                     title=file_name_hint,
                     user_token=settings.VK_USER_ACCESS_TOKEN,
                 )
-            elif item.type == "document":
+            elif item["type"] == "document":
                 attachment = upload_document(
                     vk_client,
                     downloaded.path,
@@ -110,7 +110,7 @@ def _upload_media_items(
                     user_token=settings.VK_USER_ACCESS_TOKEN,
                 )
             else:
-                notes.append(f"Skipped unsupported type: {item.type}")
+                notes.append(f"Skipped unsupported type: {item['type']}")
                 continue
 
             attachments.append(attachment)
@@ -181,7 +181,19 @@ def repost_tg_post(self, tg_post_id: int) -> None:
             if tg_post.media_group_id:
                 update_job(session, job_id, "success", last_error="Album item; waiting for finalize")
                 return
-            media_items = list_media_items_for_post(session, tg_post_id)
+            media_items = [
+                {
+                    "type": item.type,
+                    "file_id": item.file_id,
+                    "file_unique_id": item.file_unique_id,
+                    "mime_type": item.mime_type,
+                    "file_name": item.file_name,
+                    "size": item.size,
+                    "order_index": item.order_index,
+                    "tg_post_id": item.tg_post_id,
+                }
+                for item in list_media_items_for_post(session, tg_post_id)
+            ]
             payload_json = tg_post.payload_json
 
         tg_client = TelegramClient(settings.TG_BOT_TOKEN)
@@ -268,12 +280,26 @@ def finalize_album(self, media_group_id: str) -> None:
                     update_job(session, job_id, "success", last_error="Album already posted")
                     return
             post_ids = [p.id for p in posts]
-            media_items = list_media_items_for_posts(session, post_ids)
+            media_items = [
+                {
+                    "type": item.type,
+                    "file_id": item.file_id,
+                    "file_unique_id": item.file_unique_id,
+                    "mime_type": item.mime_type,
+                    "file_name": item.file_name,
+                    "size": item.size,
+                    "order_index": item.order_index,
+                    "tg_post_id": item.tg_post_id,
+                }
+                for item in list_media_items_for_posts(session, post_ids)
+            ]
             payload_json = posts[0].payload_json
             message = next((p.text for p in posts if p.text), "")
 
         post_order = {post.id: post.message_id for post in posts}
-        media_items.sort(key=lambda item: (post_order.get(item.tg_post_id, 0), item.order_index))
+        media_items.sort(
+            key=lambda item: (post_order.get(item["tg_post_id"], 0), item["order_index"])
+        )
 
         if not media_items and not message:
             with session_scope() as session:

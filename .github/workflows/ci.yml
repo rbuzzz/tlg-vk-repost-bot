@@ -8,6 +8,22 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      TG_BOT_TOKEN: dummy
+      ADMIN_IDS: "1"
+      SOURCE_CHANNEL_IDS: ""
+      VK_GROUP_ID: "1"
+      VK_ACCESS_TOKEN: dummy
+      VK_USER_ACCESS_TOKEN: ""
+      VK_API_VERSION: "5.199"
+      MODE: "auto"
+      LIMIT_STRATEGY: "truncate"
+      ALBUM_FINALIZE_DELAY_SEC: "3"
+      MAX_FILE_SIZE_MB: "200"
+      DATABASE_URL: "postgresql+psycopg://user:pass@localhost:5432/db"
+      REDIS_URL: "redis://localhost:6379/0"
+      LOG_LEVEL: "INFO"
+      TEMP_DIR: "/tmp/tg_vk_bot"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

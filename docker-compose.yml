@@ -1,0 +1,53 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-tg_vk_bot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tg_vk_bot}
+      POSTGRES_DB: ${POSTGRES_DB:-tg_vk_bot}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+    ports:
+      - "6379:6379"
+
+  poller:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      - postgres
+      - redis
+    working_dir: /app
+    command: ["python", "-m", "app.tg.polling"]
+    volumes:
+      - .:/app
+      - temp_data:/tmp/tg_vk_bot
+
+  worker:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      - postgres
+      - redis
+    working_dir: /app
+    command: ["celery", "-A", "app.tasks.celery_app", "worker", "-l", "INFO"]
+    volumes:
+      - .:/app
+      - temp_data:/tmp/tg_vk_bot
+
+volumes:
+  pgdata:
+  redisdata:
+  temp_data:
